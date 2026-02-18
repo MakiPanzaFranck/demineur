@@ -1,47 +1,59 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:ansicolor/ansicolor.dart';
+import 'package:demineur/demineur.dart';
 
-void afficherGrille(int largeurGille, int hauteurGrille, List<int> grille){
-stdout.writeln("c/l    a b c d e f g h");
-stdout.writeln("    ---------------");
-var numCol= 1;
-for(var i= 0; i<grille.length;  i++){
-  if ( i% largeurGille == 0){
-    stdout.write("$numCol   ");
-    numCol += 1;
-  }
-  stdout.write("|x");
-  if(i % largeurGille == largeurGille - 1){
-    stdout.writeln("|\n    ---------------\n");
-  }
-}
-}
+
+
 void main(List<String> arguments) {
   var execution = true;
-  int largeurGille = 8;
+  String? choixUtilisateur;
+  int largeurGrille = 8;
   int hauteurGrille = 8;
-  int tailleGrille= largeurGille * hauteurGrille;
+  int tailleGrille = largeurGrille * hauteurGrille;
+  int nombreMine = 5;
 
-  final penVert= ansiColor()..green();
+  //TOT initialisation
 
-  var grille = List<int>.generate(tailleGrille,(i)=> 0);
-  String?choixUtilisateur;
-  while(execution){
+  final penVert = AnsiPen()..green();
+
+  var grille = genererGrille(largeurGrille, hauteurGrille,nombreMine);
+  var cellulesActives = List<bool>.generate(tailleGrille, (i)=> false);
+
+  while (execution) {
     stdout.write('\x1B[2J\x1B[0;0H');
-    print("-=-=-=-=-=-=-=-");
-    print("-   DEMINEUR  -");
-    print("-=-=-=-=-=-=-=-");
-    //TODO afficher le dernier coup jouer ou message d'erreur ou le message
-    if(choixUtilisateur!= null){
-    print("dernier coup: $choixUtilisateur");
+    print("-=-=-=-=-=-=-=-=-=-=-");
+    print("-      DEMINEUR     -");
+    print("-=-=-=-=-=-=-=-=-=-=-");
+    // TODO afficher le dernier coup joué ou un message d'erreur ou le message de Game Over
+    if (choixUtilisateur != null) {
+      print("dernier coup: ${penVert(choixUtilisateur)}");
     }
-    stdout.write(penVert("Saisissez votre coup(cl) ou q pour quitter:"));
-    choixUtilisateur= stdin.readByteSync() as String?;
-    choixUtilisateur=choixUtilisateur?.toLowerCase();
-    execution= choixUtilisateur != "q";
-    //TODO valider  si le choix de l'utilisateur est un coup valide.
+    afficherGrille(largeurGrille, hauteurGrille, grille, cellulesActives);
+    // TODO informer l'utilisateur qu'il peut jouer
+    stdout.write(penVert("Saisissez votre coup (cl) ou q pour quitter: "));
+    choixUtilisateur = stdin.readLineSync();
+    choixUtilisateur = choixUtilisateur?.toLowerCase();
+    if(choixUtilisateur == null){
+      print("erreur");
+      continue;
+    }
+    execution = choixUtilisateur != "q";
+    if(choixUtilisateur.length< 2) {
+      stdout.write("[erreur]: choix invalide");
+      continue;
+    }
+    var col = choixUtilisateur.codeUnitAt(0);
+    var ligne = int.parse(choixUtilisateur[1]) -1;
+    var index = ligne * largeurGrille + col;
 
+    if(index > tailleGrille){
+      stdout.write("[erreur]: choix invalide");
+      continue;
+    }
+    cellulesActives[index] = true;
+    
   }
 }
 
